@@ -10,7 +10,11 @@ O projeto vai conter uma comunicação com o banco de dados utilizando o SQL Ser
 
 Abra o visual studio e selecione a opção Criar um novo Projeto
 
-Selecione o template API chamada ASP.NET CORE WEB API
+![Alt text](/images/image3.png)
+
+selecione o template API chamada ASP.NET CORE WEB API
+
+![Alt text](/images/image4.png)
 
 Seleciona o diretório, mude o nome da solucão e mude o nome do projeto
 
@@ -18,6 +22,17 @@ Ex.
 1. Diretório  `C:\<SeuRepo>`
 2. Nome da solução `<<nome-solucao>>` 
 3. Nome do projeto `<<nome-projeto-api>>` 
+
+![Alt text](/images/image5.png)
+
+Configuração do projeto
+
+![Alt text](/images/image6.png)
+
+Criar o projeto
+
+![Alt text](/images/image7.png)
+
 
 # **VS Code**
 
