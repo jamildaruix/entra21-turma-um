@@ -47,14 +47,18 @@ namespace Minha_Primeira_Api_Tura_I.Controllers
         [HttpPut("{id}")]
         public ActionResult<bool> Put([FromRoute] int id, TodoItemDto todoItemDto)
         {
-            //BUSCAR OS DADOS NO BANCO DE DADOS PELO ID
+            var todoItemModel = _todoContextDB.TodoItemModels.Find(id);
 
-            TodoItemModel todoItemModel = new TodoItemModel();
-            todoItemModel.Id = id;
+            if (todoItemModel == null)
+            {
+                return NotFound("Dado não encontrado.");
+            }
+
             todoItemModel.Nome = todoItemDto.Nome;
             todoItemModel.Ativo = todoItemDto.Ativo;
 
-            // ATUALIZO NO BANCO DE DADOS
+            _todoContextDB.TodoItemModels.Update(todoItemModel);
+            _todoContextDB.SaveChanges();
 
             return Ok(true);
         }
@@ -67,9 +71,18 @@ namespace Minha_Primeira_Api_Tura_I.Controllers
         [HttpDelete("{id}")]
         public ActionResult Delete([FromRoute] int id) 
         {
-            //Validar se o registro existe no banco de dados
+            //var existe = _todoContextDB.TodoItemModels.Where(w => w.Id == id).Any(); //1
 
-            return Ok();// 200 Status Code
+            var modelItem = _todoContextDB.TodoItemModels.Find(id); //1
+
+            if (modelItem is not null)
+            {
+                _todoContextDB.TodoItemModels.Remove(modelItem); //2
+
+                _todoContextDB.SaveChanges();
+            }
+
+            return Ok();
         }
 
         /// <summary>

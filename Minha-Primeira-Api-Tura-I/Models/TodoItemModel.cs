@@ -17,5 +17,14 @@ namespace Minha_Primeira_Api_Tura_I.Models
         public bool Ativo { get; set; }
         [Required]
         public DateTime Cadastro { get; set; }
+
+        //public List<TodoItemDetailModel> Dados { get; set; }
     }
+
+    //Temporario Fazer um relacionamento
+    //[Table("TodoItemDetail")]
+    //public class TodoItemDetailModel
+    //{
+    //    public int IdTodoItem { get; set; }
+    //}
 }
