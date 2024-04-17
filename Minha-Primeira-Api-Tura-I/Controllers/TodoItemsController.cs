@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Minha_Primeira_Api_Tura_I.DTOs;
 using Minha_Primeira_Api_Tura_I.Models;
+using System.Net;
 
 namespace Minha_Primeira_Api_Tura_I.Controllers
 {
@@ -10,10 +11,12 @@ namespace Minha_Primeira_Api_Tura_I.Controllers
     public class TodoItemsController : ControllerBase
     {
         private readonly TodoContextDB _todoContextDB;
+        private readonly ILogger<TodoItemsController> _logger;
 
-        public TodoItemsController(TodoContextDB todoContextDB)
+        public TodoItemsController(TodoContextDB todoContextDB, ILogger<TodoItemsController> logger)
         {
             _todoContextDB = todoContextDB;
+            _logger = logger;
         }
 
         /// <summary>
@@ -22,17 +25,25 @@ namespace Minha_Primeira_Api_Tura_I.Controllers
         /// <param name="todoItemDto"></param>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult<int> Post(TodoItemDto todoItemDto)
+        public ActionResult<TodoItemResponseDto> Post(TodoItemDto todoItemDto)
         {
             TodoItemModel todoItemModel = new TodoItemModel();
             todoItemModel.Nome = todoItemDto.Nome;
             todoItemModel.Ativo = todoItemDto.Ativo;
             todoItemModel.Cadastro = DateTime.Now;
 
+            var indexNome = todoItemDto.Nome.Split(' ');
+            todoItemModel.Apelido = $"ap-{indexNome[0]}";
+
             _todoContextDB.TodoItemModels.Add(todoItemModel);
             _todoContextDB.SaveChanges();
 
-            return Ok(todoItemModel.Id);
+            return Ok(new TodoItemResponseDto
+            {
+                Id = todoItemModel.Id,
+                Nome = todoItemModel.Nome,
+                Apelido = todoItemModel.Apelido
+            });
         }
 
 
@@ -69,7 +80,7 @@ namespace Minha_Primeira_Api_Tura_I.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public ActionResult Delete([FromRoute] int id) 
+        public ActionResult Delete([FromRoute] int id)
         {
             //var existe = _todoContextDB.TodoItemModels.Where(w => w.Id == id).Any(); //1
 
@@ -90,11 +101,22 @@ namespace Minha_Primeira_Api_Tura_I.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public ActionResult<IEnumerable<TodoItemDto>> Get() 
+        public ActionResult<IEnumerable<TodoItemResponseDto>> Get()
         {
-            //BUSCAR TODOS OS DADOS NO BANCO
+            var modelTodoItems = _todoContextDB.TodoItemModels.ToList();
+            var listaTodoItemDto = new List<TodoItemResponseDto>();
 
-            return Ok();
+            foreach (var todoItem in modelTodoItems)
+            {
+                listaTodoItemDto.Add(new TodoItemResponseDto()
+                {
+                    Id = todoItem.Id,
+                    Apelido = todoItem.Apelido,
+                    Nome = todoItem.Nome
+                });
+            }
+
+            return Ok(listaTodoItemDto);
         }
 
         /// <summary>
@@ -104,11 +126,36 @@ namespace Minha_Primeira_Api_Tura_I.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public ActionResult<TodoItemDto> Get([FromRoute] int id)
+        public ActionResult<TodoItemResponseDto> Get([FromRoute] int id)
         {
-            //BUSCAR os dados por id e devolver um objeto
+            try
+            {
+                _logger.LogDebug("Para validar se entrou no método GET");
 
-            return Ok();
+                _logger.LogInformation($"Id recebido no request {id}");
+
+                var todoItemModel = _todoContextDB.TodoItemModels.Find(id);
+
+                var todoItemResponseDto = new TodoItemResponseDto
+                {
+                    Id = todoItemModel.Id,
+                    Apelido = todoItemModel.Apelido,
+                    Nome = todoItemModel.Nome
+                };
+
+
+                return Ok(todoItemResponseDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Erro no método get com o id {id}", ex);
+
+                return StatusCode(HttpStatusCode.InternalServerError.GetHashCode(),
+                    new
+                    {
+                        Message = "Erro ao comunicação com o método"
+                    });
+            }
         }
     }
 }
